@@ -1,25 +1,24 @@
 #include "printer.h"
 
-void Printer::init_buffer(void** buffer) {
+void Printer::init_buffer(Buffer& buff) {
     if (this->w == 0 || this->h == 0) {
+        //should we throw error here?
         return;
     }
 
-    *buffer = malloc(this->w * this->h);
-    this->clear_buffer(*buffer);
-}
+    char * temp = (char *) malloc(this->w * this->h);
+    buff = Buffer(this->w, this->h, temp);
+    this->clear_buffer(buffer);
+};
 
-void Printer::clear_buffer(void* buffer) {
+void Printer::clear_buffer(Buffer& buffer) {
     if (this->w == 0 || this->h == 0) {
+        //should we throw error here?
         return;
     }
 
-    memset(buffer, ' ', this->w * this->h);
-}
-
-char& Printer::readBuff(void* buffer, int x, int y) {
-    return ((char*)buffer)[y * this->w + x];
-}
+    memset(buffer[0], ' ', this->w * this->h);
+};
 
 int Printer::compare_row(int row_num) {
     if (row_num >= this->h || row_num < 0) {
@@ -30,20 +29,20 @@ int Printer::compare_row(int row_num) {
     char* cur = this->buffer[row_num];
 
     return memcmp(old, cur, this->w);
-}
+};
 
 void Printer::move_cursor(int y) {
     this->y = y;
-}
+};
 
 void Printer::move_cursor(int y, int x) {
     this->y = y;
     this->x = x;
-}
+};
 
 void Printer::next_line() {
     this->move_cursor(this->y + 1, 0);
-}
+};
 
 void Printer::print(string str) {
     for (int i = 0; i < str.length(); i++) {
@@ -54,9 +53,9 @@ void Printer::print(string str) {
             this->next_line();
         }
 
-        readBuff(this->buffer, tx, ty) = str[i];
+        this->buffer[ty][tx] = str[i];
     }
-}
+};
 
 void Printer::println(string str) {
     this->print(str);
@@ -64,29 +63,45 @@ void Printer::println(string str) {
 };
 
 void Printer::clear_line(int y) {
-    memset(this->buffer + y * this->w, ' ', this->w);
+    memset(this->buffer[y], ' ', this->w);
 };
 
 void Printer::clear() {
     this->clear_buffer(this->buffer);
-}
+};
 
 void Printer::render() {
+    //also clear screen pls?
     printf("\x1b[H");  // Reset cursor to 0,0
 
     for (int i = 0; i < this->h; i++) {
-        if (this->compare_row(i) == 1) {
-            continue;
-        }
+        // if (this->compare_row(i) == 0) {
+        //     continue;
 
-        printf("%.*s\n", this->w, rend);
+        //     //instead of continue, jump cursor to next line
+        //     //idk how, commented out for now
+        // }
+
+        printf("%.*s\n", this->w, buffer[i]);
     }
-}
+};
 
-Printer::Printer(int w, int h) {
+Printer::Printer(){
+    Printer(0, 0);
+};   
+
+Printer::Printer(int w, int h){
+    this->x = 0;
+    this->y = 0;
+
     this->w = w;
     this->h = h;
 
-    this->init_buffer(&this->buffer);
-    this->init_buffer(&this->old_buffer);
+    this->init_buffer(this->buffer);
+    this->init_buffer(this->old_buffer);
+};
+
+Printer::~Printer(){
+    delete &this->buffer;
+    delete &this->old_buffer;
 }
