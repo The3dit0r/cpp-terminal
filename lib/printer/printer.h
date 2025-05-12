@@ -9,14 +9,15 @@ class Printer {
     class Buffer{
         friend class Printer;
         private:
-            char * buff; // 1 dimentional array
-            int x, y;;
+            char * buff = nullptr; // 1 dimentional array
+            int row_size;
         public:
-            Buffer(int x = 0, int y = 0, char * _b = nullptr) : x(x), y(y), buff(_b){};
+            Buffer(int x = 0) : row_size(x){};
+            void setBuff(char * _b){this->buff = _b;};
             char* operator[](int index){
                 //internal type, type safety begone
                 //if(this->x == 0 || this->y == 0 || this->buff == nullptr) return nullptr;
-                return &this->buff[index * this->y + this->x];
+                return &this->buff[index * row_size];
             }
             ~Buffer(){
                 if(this->buff != nullptr) free(this->buff);
@@ -59,5 +60,15 @@ class Printer {
     void clear();
 
     void render();
+
+    void debug(){
+        printf("------------------------------------");
+        printf("Testing the new buffer system\n");
+        this->buffer[0][0] = 'A';
+        this->buffer[0][1] = 'B';
+        printf("%c %c\n", this->buffer[0][0], this->buffer[0][1]);
+        printf("%.2s\n", this->buffer[0]);
+        printf("------------------------------------");
+    }
 
 };
